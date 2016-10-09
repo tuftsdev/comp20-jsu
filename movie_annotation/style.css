@@ -1,0 +1,24 @@
+
+h1{
+	text-align:center;
+}
+
+body{
+	background-image: url("background.jpg"); 
+	background-size: cover;
+}
+
+
+video{
+	width: 760px;
+	height: 600px;
+	display:block;
+	margin: 0 auto;
+	text-align: center;
+}
+
+
+#movie_quotes{
+	text-align:center;
+	font-size: 24px;
+}
