@@ -1,5 +1,5 @@
 
-Everything for this lab has been implemented correctly; annotations are not perfectly synced.
+Everything for this lab has been implemented correctly; however, the annotations are not perfectly synced.
 
 I did not collaborate with anyone on this lab.
 
