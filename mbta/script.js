@@ -1,16 +1,4 @@
 
-/*
-test = new Date();
-month = test.getMonth();
-month = (month * 1) + 1;
-day = test.getDate();
-year = test.getFullYear();
-document.write(" ",month,"/",day,"/",year," ");
-*/
-
-
-
-
 
 
 var map;
@@ -42,8 +30,40 @@ var station_info = {
 	"Braintree":new google.maps.LatLng(42.2078543,-71.0011385)
 }
 
+var Alewife_path = [
+station_info["Alewife"],
+station_info["Davis"],
+station_info["Porter Square"],
+station_info["Harvard Square"],
+station_info["Central Square"],
+station_info["Kendall/MIT"],
+station_info["Charles/MGH"],
+station_info["Park Street"],
+station_info["Downtown Crossing"],
+station_info["South Station"],
+station_info["Broadway"],
+station_info["Andrew"],
+station_info["JFK/UMass"]
+];
+
+var Ashmont_path = [
+station_info["JFK/UMass"],
+station_info["Savin Hill"],
+station_info["Fields Corner"],
+station_info["Shawmut"],
+station_info["Ashmont"]
+];
+var Braintree_path = [
+station_info["JFK/UMass"],
+station_info["North Quincy"],
+station_info["Wollaston"],
+station_info["Quincy Center"],
+station_info["Quincy Adams"],
+station_info["Braintree"]
+];
 
 var stationMarkers = {};
+
 
 var myOptions = {
 						zoom: 13, 
@@ -71,7 +91,7 @@ function renderMap(lat,long){
 	map = new google.maps.Map(document.getElementById('map_canvas'), myOptions);
 	map.panTo(myLoc);
 	setMarkers();
-
+	setLines();
 	
 }
 
@@ -90,7 +110,7 @@ function setMarkers(){
 		stationMarkers[station] = new google.maps.Marker({
 			position:station_info[station],
 			title:station,
-			icon:"station.png"
+			icon:"station_red.png"
 		});
 		stationMarkers[station].setMap(map);
 		setInfoWindows(station);
@@ -103,6 +123,31 @@ function setInfoWindows(stationName){
 		station_window.setContent(stationMarkers[stationName].title);
 		station_window.open(map,stationMarkers[stationName]);
 		})
+}
+
+function setLines(){
+	
+	var path1 = new google.maps.Polyline({
+		path:Alewife_path,
+		strokeColor:'red',
+		strokeOpacity: 0.8,
+		strokeWeight: 4
+	});
+	var path2 = new google.maps.Polyline({
+		path:Ashmont_path,
+		strokeColor:'red',
+		strokeOpacity: 0.8,
+		strokeWeight: 4
+	});
+	var path3 = new google.maps.Polyline({
+		path:Braintree_path,
+		strokeColor:'red',
+		strokeOpacity: 0.8,
+		strokeWeight: 4
+	});
+	path1.setMap(map);
+	path2.setMap(map);
+	path3.setMap(map);
 }
 
 
