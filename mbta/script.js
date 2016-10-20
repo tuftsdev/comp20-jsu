@@ -30,6 +30,8 @@ var station_info = {
 	"Braintree":new google.maps.LatLng(42.2078543,-71.0011385)
 }
 
+
+
 var Alewife_path = [
 station_info["Alewife"],
 station_info["Davis"],
@@ -61,12 +63,38 @@ station_info["Quincy Center"],
 station_info["Quincy Adams"],
 station_info["Braintree"]
 ];
-
+var data;
+var request;
 var stationMarkers = {};
+var arrivals = {
+	"South Station":[],
+	"Andrew":[],
+	"Porter Square":[],
+	"Harvard Square":[],
+	"JFK/UMass":[],
+	"Savin Hill":[],
+	"Park Street":[],
+	"Broadway":[],
+	"North Quincy":[],
+	"Shawmut":[],
+	"Davis":[],
+	"Alewife":[],
+	"Kendall/MIT":[],
+	"Charles/MGH":[],
+	"Downtown Crossing":[],
+	"Quincy Center":[],
+	"Quincy Adams":[],
+	"Ashmont":[],
+	"Wollaston":[],
+	"Fields Corner":[],
+	"Central Square":[],
+	"Braintree":[]
+};
+
 
 
 var myOptions = {
-						zoom: 13, 
+						zoom: 14, 
 						mapTypeId: google.maps.MapTypeId.ROADMAP
 					};
 function initMap() {
@@ -81,7 +109,7 @@ function getLocation(){
 			renderMap(my_lat,my_long);
 		})
 	}else{
-		console.log("Geolocation not supported on this browser.");
+		alert("Geolocation not supported on this browser.");
 	}
 }
 
@@ -96,33 +124,68 @@ function renderMap(lat,long){
 }
 
 function setMarkers(){
-	selfMarker = new google.maps.Marker({
-		position: myLoc,
-		title:"Your location is " + my_lat + ", " + my_long,
-	})
-	selfMarker.setMap(map);
-
-	google.maps.event.addListener(selfMarker, "click", function(){
-		infowindow.setContent(selfMarker.title);
-		infowindow.open(map,selfMarker);
-	})
+	setSelfWindow();
 	for(var station in station_info){
 		stationMarkers[station] = new google.maps.Marker({
 			position:station_info[station],
-			title:station,
+			content:"Something went wrong... please click on the marker again",
 			icon:"station_red.png"
 		});
 		stationMarkers[station].setMap(map);
-		setInfoWindows(station);
+		getJSON();
+		setInfoWindows(station,stationMarkers[station]);
 	}
 }
 
-function setInfoWindows(stationName){
-	var station_window = new google.maps.InfoWindow();
-	google.maps.event.addListener(stationMarkers[stationName], "click", function(){
-		station_window.setContent(stationMarkers[stationName].title);
-		station_window.open(map,stationMarkers[stationName]);
-		})
+function setSelfWindow(){
+	closestStation();
+	var content = "<p>Closest station: " + shortest_station + "<br /> " + shortest_dist + " km</p>";
+	selfMarker = new google.maps.Marker({
+		position: myLoc,
+		title:"Your location",
+		content:content
+	});
+	selfMarker.setMap(map);
+	google.maps.event.addListener(selfMarker, "click", function(){
+		infowindow.close();
+		infowindow.setContent(selfMarker.content);
+		infowindow.open(map,selfMarker);
+	});
+}
+
+function closestStation(){
+	R = 6371; //km
+	shortest_dist = 9999999999999;
+	shortest_station = "";
+	for(var station in station_info){
+		var station_lat = station_info[station].lat(station);
+		var station_long = station_info[station].lng(station);
+		var lat_diff = (my_lat - station_lat).toRad();
+		var long_diff = (my_long - station_long).toRad();
+		var a = Math.sin(lat_diff/2) * Math.sin(lat_diff/2) + 
+					Math.cos(my_lat.toRad()) * Math.cos(station_lat.toRad()) *
+					Math.sin(long_diff/2) * Math.sin(long_diff/2);
+		var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+		var d = R * c;
+		if (d < shortest_dist){
+			shortest_dist = d;
+			shortest_station = station;
+		}
+	}
+}
+Number.prototype.toRad = function(){
+	return this * Math.PI / 180
+}
+
+function setInfoWindows(stationName,marker){
+	google.maps.event.addListener(marker, "click", function(){
+		if(marker.content == "Something went wrong... please click on the marker again"){
+			getJSON();
+		}
+		infowindow.close();
+		infowindow.setContent(marker.content);
+		infowindow.open(map,marker);
+	});
 }
 
 function setLines(){
@@ -145,9 +208,53 @@ function setLines(){
 		strokeOpacity: 0.8,
 		strokeWeight: 4
 	});
+
+	var myLatLng = new google.maps.LatLng(my_lat,my_long);
+	var selfPath = new google.maps.Polyline({
+		path:[myLatLng,station_info[shortest_station]],
+		strokeColor:'cyan',
+		strokeOpacity:0.5,
+		strokeWeight:4
+	});
 	path1.setMap(map);
 	path2.setMap(map);
 	path3.setMap(map);
+	selfPath.setMap(map);
+}
+
+function getJSON(){
+	request = new XMLHttpRequest();
+	request.open("get","https://rocky-taiga-26352.herokuapp.com/redline.json",true);
+	request.onreadystatechange = function(){
+		if(request.readyState==4 && request.status==200){
+			data = request.responseText;
+			data = JSON.parse(data);
+			var station_schedule = data["TripList"]["Trips"];
+
+			for(var i  = 0; i < station_schedule.length;i++){
+				var predictions = station_schedule[i]["Predictions"];
+				for(var j = 0; j < predictions.length;j++){
+					var name = predictions[j]["Stop"];
+					var time = predictions[j]["Seconds"]%60;
+					if(time>0){
+						arrivals[name].push(time);
+					}
+				}
+			}
+
+			for(var station in station_info){
+				arrivals[station].sort(function(a,b){return a-b}); //SORTING FUNCTION - function taken from http://www.w3schools.com/jsref/jsref_sort.asp
+				var marker = stationMarkers[station];
+				var content = "<p> Arrival times (inbounds and outbounds) <br />";
+				for (var i = 0; i < arrivals[station].length;i++){
+					content += arrivals[station][i] + " minutes <br />"
+				}
+				content += "</p>"
+				marker.content = content;
+			}
+		}
+	}
+	while(request.send()){}
 }
 
 
