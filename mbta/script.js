@@ -139,7 +139,7 @@ function setMarkers(){
 
 function setSelfWindow(){
 	closestStation();
-	var content = "<p>Closest station: " + shortest_station + "<br /> " + shortest_dist + " km</p>";
+	var content = "<p>Closest station: " + shortest_station + "<br /> " + shortest_dist + " mi</p>";
 	selfMarker = new google.maps.Marker({
 		position: myLoc,
 		title:"Your location",
@@ -230,24 +230,26 @@ function getJSON(){
 			data = request.responseText;
 			data = JSON.parse(data);
 			var station_schedule = data["TripList"]["Trips"];
-
 			for(var i  = 0; i < station_schedule.length;i++){
 				var predictions = station_schedule[i]["Predictions"];
 				for(var j = 0; j < predictions.length;j++){
 					var name = predictions[j]["Stop"];
 					var time = predictions[j]["Seconds"]%60;
 					if(time>0){
-						arrivals[name].push(time);
+						arrivals[name].push({"time":time,"Destination":station_schedule[i]["Destination"]});
 					}
 				}
 			}
 
 			for(var station in station_info){
-				arrivals[station].sort(function(a,b){return a-b}); //SORTING FUNCTION - function taken from http://www.w3schools.com/jsref/jsref_sort.asp
+				arrivals[station].sort(function(a,b){
+				return a["time"]-b["time"]}
+				); //SORTING FUNCTION - function taken from http://www.w3schools.com/jsref/jsref_sort.asp
 				var marker = stationMarkers[station];
-				var content = "<p> Arrival times (inbounds and outbounds) <br />";
+				var content = "<p> Estimated arrival time and Destination<br />";
 				for (var i = 0; i < arrivals[station].length;i++){
-					content += arrivals[station][i] + " minutes <br />"
+					content += arrivals[station][i]["time"] + " minutes - "
+					 + arrivals[station][i]["Destination"] +"<br />"
 				}
 				content += "</p>"
 				marker.content = content;
