@@ -6,27 +6,36 @@
 	<title>Captain's Log</title>
 	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
 	<script>
-		var months = ["January","February","March","April","May","June","July","August","September","October","November","December"];
-		var days = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
-	  	var date = new Date();
-	  	var stamp = date.toDateString() + " " + date.getHours() + ":" + date.getMinutes() + ":" + date.getSeconds(); + " - ";
+		
+	  	
+	  	var new_msg;
+	  	var new_log;
+	  	var old_logs = "";
 	  	$(document).ready(function(){
+	  		load();
 	  		$("#msg").keypress(function(e){
 	  			if(e.which == 13){
-	  				console.log("Pressed the enter key");
+	  				var date = new Date();
+	  				new_msg = $("#msg").val();
+
+	  				new_log = date.toDateString() + " " + 
+	  				date.getHours() + ":" + date.getMinutes() + ":" + 
+	  				date.getSeconds() + " - " +new_msg + "<br/>";
+	  				$("#msg").val("");
+	  				localStorage.setItem("logs",new_log + old_logs)
+	  				load();
 	  			}
 	  		});
 	  	});
-	  	//$('#msg').keypress(function(e){
-	  		//console.log("We in there");
-	  		//var dInput = $("input:text[name=msg]").val();
-	  		//console.log(dInput);
-	  		//var key = e.which;
-	  		
-	  	//});
-	  	//var log = $('#msg').val();
-	  	//console.log(log);
-	  	console.log(stamp);
+
+	  	function load(){
+	  		old_logs = localStorage.getItem("logs");
+	  		if(old_logs == null){
+	  			old_logs = "";
+	  		}
+	  		$("div#log").html(old_logs);
+	  	}
+
 	</script>
 </head>
 
