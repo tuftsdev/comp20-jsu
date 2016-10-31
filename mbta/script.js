@@ -229,7 +229,6 @@ function getJSON(){
 		if(request.readyState==4 && request.status==200){
 			data = request.responseText;
 			data = JSON.parse(data);
-			console.log(data);
 			var station_schedule = data["TripList"]["Trips"];
 			for(var i  = 0; i < station_schedule.length;i++){
 				var predictions = station_schedule[i]["Predictions"];
@@ -255,7 +254,6 @@ function getJSON(){
 				content += "</p>"
 				marker.content = content;
 			}
-			console.log(arrivals);
 		}
 	}
 	while(request.send()){}
