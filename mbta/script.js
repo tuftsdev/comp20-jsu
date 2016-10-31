@@ -224,11 +224,12 @@ function setLines(){
 
 function getJSON(){
 	request = new XMLHttpRequest();
-	request.open("get","https://rocky-taiga-26352.herokuapp.com/redline.json",true);
+	request.open("get","https://radiant-savannah-75116.herokuapp.com/redline.json",true);
 	request.onreadystatechange = function(){
 		if(request.readyState==4 && request.status==200){
 			data = request.responseText;
 			data = JSON.parse(data);
+			console.log(data);
 			var station_schedule = data["TripList"]["Trips"];
 			for(var i  = 0; i < station_schedule.length;i++){
 				var predictions = station_schedule[i]["Predictions"];
@@ -254,6 +255,7 @@ function getJSON(){
 				content += "</p>"
 				marker.content = content;
 			}
+			console.log(arrivals);
 		}
 	}
 	while(request.send()){}
