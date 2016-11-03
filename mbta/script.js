@@ -225,6 +225,7 @@ function setLines(){
 function getJSON(){
 	request = new XMLHttpRequest();
 	request.open("get","https://radiant-savannah-75116.herokuapp.com/redline.json",true);
+	//request.open("get","https://grisly-phantom-63266.herokuapp.com/redline.json",true);
 	request.onreadystatechange = function(){
 		if(request.readyState==4 && request.status==200){
 			data = request.responseText;
@@ -246,7 +247,7 @@ function getJSON(){
 				return a["time"]-b["time"]}
 				); //SORTING FUNCTION - function taken from http://www.w3schools.com/jsref/jsref_sort.asp
 				var marker = stationMarkers[station];
-				var content = "<p> Estimated arrival time and Destination<br />";
+				var content = "<p>" + station + "<br /><br /> Estimated arrival time and Destination<br />";
 				for (var i = 0; i < arrivals[station].length;i++){
 					content += arrivals[station][i]["time"] + " minutes - "
 					 + arrivals[station][i]["Destination"] +"<br />"
