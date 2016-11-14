@@ -94,9 +94,10 @@ GameManager.prototype.updateGameServer = function(){
                 "username":username,
                 "grid":JSON.stringify(grid)}
 
+  //$.post("http://radiant-savannah-75116.herokuapp.com/submit.json",
   $.post("http://localhost:5000/submit.json",
          submit,function(data, status){
-          });
+          },"JSON");
 };
 
 GameManager.prototype.actuate = function () {
