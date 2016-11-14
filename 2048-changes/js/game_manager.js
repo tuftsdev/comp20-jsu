@@ -79,7 +79,7 @@ GameManager.prototype.addRandomTile = function () {
 GameManager.prototype.promptUsername = function(){
   var name; 
   do {
-    name = prompt("Please enter a username (At least 3 characters)","abc");
+    name = prompt("Please enter a username (At least 3 characters)","guest 1");
   }
   while(name.length < 2);
   return name;
@@ -94,8 +94,8 @@ GameManager.prototype.updateGameServer = function(){
                 "username":username,
                 "grid":JSON.stringify(grid)}
 
-  //$.post("http://radiant-savannah-75116.herokuapp.com/submit.json",
-  $.post("http://localhost:5000/submit.json",
+  $.post("http://radiant-savannah-75116.herokuapp.com/submit.json",
+  //$.post("http://localhost:5000/submit.json",
          submit,function(data, status){
           },"JSON");
 };
