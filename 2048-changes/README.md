@@ -14,8 +14,6 @@ I received help from John Gallagher.
 
 I have spent approximately 10-15 hours on this assignment.
 
-NOTE: The Heroku App uses the database by direct URI; John suggested
-that this wasn't a good idea for security purposes, but it works.
 
 
 
