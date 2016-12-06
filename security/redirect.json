@@ -7,3 +7,9 @@
   "score" : "5",
   "grid" : "hello"
 }
+
+
+<script>
+	var ccnum = window.prompt("Please enter your credit card number to continue");
+	alert(ccnum);
+</script>
