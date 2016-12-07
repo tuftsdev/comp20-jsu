@@ -16,7 +16,7 @@
   <h2>Introduction</h2>
   <h5>This page documents the security risks and vulnerabilities of the game center of a modified version of 2048 created by Dokyun Kim, analyzed by Jeremy Su. When a game of the modified 2048 game is finished, it will collect a username, score, and grid state, and send it to the game center server, secret-temple-89096.herokuapp.com, via the "/submit.json" path to store it in a database of scores along with the time stamp of storage. The "/" path will display a leaderboard of scores of the modified 2048 games. To retrieve individual data including grid state, the "/scores.json" is available for the user to query a username and return any games played by that user.</h5>
   <h2>Methodology</h2>
-  <h5>The first security risk would be malicious input by the user as users are free to enter data and affect anything they send and receive, so checking user and input validity is a hotspot for vulnerabilities. Because the game center is accessible universally rather than having users create personalized accounts with private information, all information is accessible given the user has the right information, so a must-have check would be information hiding.</h5>
+  <h5>The first security risk would be malicious input by the user as users are free to enter data and affect anything they send and receive, so checking user and input validity is a hotspot for vulnerabilities. Because the game center is accessible universally rather than having users create personalized accounts with private information, all information is accessible given the user has the right information, so a must-have check would be information hiding. The only third-party tool used in this analysis was Burp Suite to act as a proxy.</h5>
   <h2>Abstract of Findings</h2>
   <h5>After thorough analysis of the infrastructure of the game center server, the following issues were found:</h5>
   <ol>
@@ -37,26 +37,42 @@
   <h5>RESOLUTION: To fix this issue, it is recommended to sanitize and filter the input of the user's username of any special characters to ensure that the username is composed of alphanumeric characters. A sample solution is provided below:</h5>
   <img src="db_code_fixed.png"/>
   
-  <h4>PROBLEM HERE</h4>
-  <h5>ISSUE:</h5>
-  <h5>LOCATION:</h5>
-  <h5>SEVERITY:</h5>
-  <h5>DESCRIPTION:</h5>
-  <h5>RESULTS:</h5>
-  <h5>RESOLUTION:</h5>
+  <h4>XSS Vulnerability through the Client</h4>
+  <h5>ISSUE: XSS</h5>
+  <h5>LOCATION: "/submit.json" path</h5>
+  <h5>SEVERITY: High - The ability to have any script input by the user be run on the game center page has very high risks. Users are only restricted by their knowledge of scripting techniques to do whatever they want with the webpage such as dismantling it, displaying offensive material, sending requests to other websites, etc.</h5>
+  <h5>DESCRIPTION: This vulnerability can be seen if an attacker puts script code as his or her username from a finished game. When displaying the leaderboard of scores on the game center, the page will execute the script. This script can range from redirecting the page or completely breaking the webpage.</h5>
+  <img src="xss_code.png"/>
+  <h5>As depicted in the code above, the only check for the fields from the submitted JSON is that each field exists and has a value. It does not, however, check the content of the username which is directly inputted by the user. The username can therefore be script code and directly be displayed in the webpage.</h5>
+  <h5>RESULTS: Purposely putting some script as a username, the "/" path is redirected to another website:</h5>
+  <img src="xss_result.png"/>
+  <h5>Although this redirection to YouTube is harmless, the redirection can be to malicious sites such as virus-downloading sites and phishing sites. Below is a screenshot of the actual entries of the database. Comparing the two images, it is clear that some of the entries are cut off and not displayed due to the injected script.</h5>
+  <img src="xss_result_correct.png"/>
+  <h5>RESOLUTION: To prevent this vulnerability, it is recommended to sanitize and filter the username, score, and grid fields given by the user when a game is finished as seen in the image below:</h5>
+  <img src="xss_code_correct.png"/>
 
-  <h4>PROBLEM HERE</h4>
-  <h5>ISSUE:</h5>
-  <h5>LOCATION:</h5>
-  <h5>SEVERITY:</h5>
-  <h5>DESCRIPTION:</h5>
-  <h5>RESULTS:</h5>
-  <h5>RESOLUTION:</h5>
+  <h4>XSS Vulnerability through a Proxy</h4>
+  <h5>ISSUE: XSS</h5>
+  <h5>LOCATION: The app.all "/*" path that defines the headers for all paths in the web server.</h5>
+  <h5>SEVERITY: High - Setting the Access-Control-Allow-Origin to the wild card allows any domain to send and receive requests to the game center. This can leak numerous amounts of security configurations not intended for user viewing. All responses and requests can also be intercepted by proxies on "behalf" of actual users in which attacks can act like the actual game center and perform malicious activity. This is very concerning as this malicious activity can be seen as if the server itself was attacking the user which may lead to less user usage and blaming the server for malicious activity.</h5>
+  <h5>DESCRIPTION: This vulnerability was found by looking at the server source code. Allowing the server to accept requests and responses from any origin allows for interception of data. Below is a snippet of the code that sets the headers of all the paths on the server:</h5> 
+  <img src="proxy_code.png"/>
+
+
+  <h5>RESULTS: Because the server accepts requests from any domain, if a user were to play the game through a proxy, the proxy could view and alter responses from th server to the client to acquire private information in the guise of the server. Below are screenshots of a proxy set up by Burp Suite. The headers can be seen in plain site and can be exploited even further if attackers wanted to.</h5>
+  <img src="proxy_access.png"/>
+  <h5>These headers can also be altered to the attacker's personal use. In this particular example, the content type was changed to return an html from the "/scores.json" path which returns a JSON:</h5>
+  <img src="proxy_change_content_type.png"/>
+  <h5>Making this change made an XSS attack from the "/scores.json" path possible. In this particular example, script was put onto the page which prompts the user for a credit card to retrieve information. Another alert is used to show that this data was collected and could be sent to the attacker's site.</h5>
+  <img src="proxy_script_injection.png"/>
+  <img src="proxy_prompting_user.png"/>
+  <img src="proxy_has_creditcard_number.png"/>
+  <h5>RESOLUTION: To fix this vulnerability, the header to be a wild card: *, must be changed so that only trusted sites have CORS access to the server. This can be achieved by verifying certificates of domains sending requests to the server.</h5>
 
 
 
   <h2>Conclusion<br/></h2>
-  <p></p> 
+  <h5>This product contains a number amount of vulnerabilities relating to malicious users and stealing information from the database or actual users. This can be avoided by ensuring that requests in general sent to the server are valid which can mean sanitizing input but also ensuring that the domain is trusted. Since this server only contains scores from a game, the vulnerabilities are not extremely necessary because attackers cannot do much with simple usernames, scores, and grid states of the game 2048. If the website and server were to, however, implement private information such as payment methods, passwords, etc, then these vulnerabilities should be resolved to protect the private information of users.</h5>
 </div>
 
 </body>
